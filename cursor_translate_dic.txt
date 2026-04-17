@@ -9,7 +9,6 @@
 "Indexing & Docs" => "索引与文档"
 "Network" => "网络"
 "Marketplace" => "市场"
-"Beta" => "测试版"
 "Features" => "功能"
 "Models" => "模型"
 "Rules" => "规则"
@@ -126,7 +125,45 @@
 "Control how strongly the tint is applied" => "控制色调的应用强度"
 "Reduce Transparency" => "减少透明度"
 "Replace translucent surfaces with opaque backgrounds" => "将半透明表面替换为不透明背景"
+"Notifications" => "通知"
+"System Notifications" => "系统通知"
+"Show system notifications when Agent completes or needs attention" => "当代理完成任务或需要您关注时，显示系统通知"
+"System Tray Icon" => "系统托盘图标"
+"Show Cursor in system tray" => "在系统托盘中显示光标（程序图标）"
+"Completion Sound" => "完成提示音"
+"Play a sound when Agent finishes responding" => "当代理完成响应时播放提示音"
+"Your code data will not be trained on or used to improve the product." => "您的代码数据不会被用于训练或以此来优化产品。"
+"We will not store your code." => "我们不会存储您的代码。"
+"Privacy Mode (Legacy) is enabled. Background Agent and some features not available." => "已启用隐私模式（旧版）。后台代理及部分功能将不可用。"
+"Update Access" => "更新渠道"
+"By default, get notifications for stable updates. In Early Access, pre-release builds may be unstable for production work." => "默认情况下，仅接收稳定版更新通知。若开启抢先体验，预发布版本可能不适用于生产环境。"
+"Extension RPC Tracer" => "扩展RPC追踪器"
+"Log extension host RPC messages to JSON files viewable in Perfetto for performance analysis. Requires a restart to take effect." => "将扩展宿主的RPC消息记录为JSON文件，可在Perfetto中查看以进行性能分析。需要重启后生效。"
+"Development" => "开发"
+"Import Settings from VS Code" => "从 VS Code 导入设置"
+"Import settings, extensions, and keybindings from VS Code" => "从 VS Code 导入设置、扩展和键盘快捷键"
 
+"Reset "Don't Ask Again" Dialogs" => "重置「不再询问」对话框"
+"See warnings and tips that you've hidden" => "恢复显示您之前隐藏的警告和提示"
+
+"Show status bar in the bottom of the window" => "在窗口底部显示状态栏"
+
+
+"Text Size" => "文本大小"
+"Adjust the conversation text size" => "调整对话文本大小"
+"Auto-Clear Chat" => "自动清空对话"
+"After periods of inactivity, open the Agent Pane to a new conversation" => "长时间无操作后，在智能体面板中打开新对话"
+"Submit with Ctrl + Enter" => "使用 Ctrl + Enter 发送"
+"When enabled, Ctrl + Enter submits chat and Enter inserts a newline" => "启用后，Ctrl + Enter 发送消息，Enter 键用于换行"
+"Max Tab Count" => "最大标签页数量"
+"Limit how many chat tabs can be open at once" => "限制同时可打开的对话标签页数量"
+"Queue Messages" => "消息队列"
+"Adjust the default behavior of sending a message while Agent is running" => "调整智能体运行时发送消息的默认行为"
+
+"Send after current message" => "当前消息处理完成后再发送"
+"Stop & send right away" => "终止当前任务并立即发送"
+
+"Usage Summary" => "用量摘要"
 "When to show the usage summary at the bottom of the chat pane" => "何时在聊天面板底部显示用量摘要"
 "Always" => "始终"
 "Never" => "从不"
@@ -135,6 +172,62 @@
 "Suggest the next prompt for Agent" => "为 Agent 建议下一个提示"
 "Contextual suggestions while prompting Agent" => "在提示 Agent 时提供上下文建议"
 "Agent Autocomplete" => "Agent 自动补全"
+
+########################## Agent: Auto-Run（自动运行）模块
+"Auto-Run" => "自动运行"
+
+"Auto-Run Mode" => "自动运行模式"
+"Choose how Agent runs tools like command execution, MCP, and file writes. Tools will auto-run in a sandbox if possible. If not, they will respect the allowlist or ask for approval." => "设置智能体运行命令执行、MCP、文件写入等工具的方式。工具会优先在沙箱中自动运行；若无法沙箱运行，则将遵循白名单设置或请求您的批准。"
+"Auto-Run in Sandbox" => "在沙箱中自动运行"
+
+"Commands that can run automatically" => "可自动运行的命令"
+
+"MCP tools that can run automatically. Format: 'server:tool', 'server:*' for all tools from a server, '*:tool' for a tool from any server, or '*:*' for all tools from all servers" => "可自动运行的MCP工具。格式示例：'服务名:工具名'；'服务名:*' 表示该服务下所有工具；'*:工具名' 表示所有服务下的该工具；'*:*' 表示所有服务的所有工具。"
+
+"Auto-Approved Mode Transitions" => "自动批准的模式切换"
+"Mode transitions that will be automatically approved without prompting." => "无需提示即可自动批准的智能体模式切换。"
+
+"Browser Protection" => "浏览器保护"
+"Prevent Agent from automatically running Browser tools" => "禁止智能体自动运行浏览器工具"
+
+"MCP Tools Protection" => "MCP工具保护"
+"Prevent Agent from automatically running MCP tools" => "禁止智能体自动运行MCP工具"
+
+"File-Deletion Protection" => "文件删除保护"
+"Prevent Agent from deleting files automatically" => "禁止智能体自动删除文件"
+
+"External-File Protection" => "外部文件保护"
+"Prevent Agent from creating or modifying files outside of the workspace automatically" => "禁止智能体自动创建或修改工作区外的文件"
+
+########################## Agent: Inline Diffs（行内差异）模块
+"Inline Diffs" => "行内差异"
+"Show inline diff decorations in the editor instead of only showing changes in the review panel" => "在编辑器内直接显示代码变更标记，而非仅在审阅面板中展示"
+
+########################## Agent: Inline Editing & Terminal（行内编辑与终端）模块
+"Inline Editing & Terminal" => "行内编辑与终端"
+
+"Toolbar on Selection" => "选中文本工具栏"
+"Show Add to Chat & Quick Edit buttons when selecting code" => "选中文本时显示「添加到对话」和「快速编辑」按钮"
+
+"Themed Diff Backgrounds" => "主题化差异背景"
+"Use themed background colors for inline code diffs" => "为行内代码差异使用与主题匹配的背景色"
+
+"Terminal Hint" => "终端提示"
+"Show a hint for Ctrl+K in the Terminal" => "在终端中显示 Ctrl+K 快捷键的提示"
+
+"Preview Box for Terminal Ctrl+K" => "终端 Ctrl+K 预览框"
+
+
+########################## Agent:署名与 Git 模块
+"Mark Agent commits as 'Made with Cursor'" => "将智能体提交标记为「Made with Cursor」"
+"Mark pull requests as made with Cursor" => "将拉取请求标记为使用 Cursor 创建"
+
+"Git" => "Git"
+"Branch Prefix" => "分支前缀"
+"Prefix for new branches created by Agent (e.g., cursor/, username/)" => "智能体创建的新分支前缀（例如：cursor/、用户名/）"
+
+
+##########################
 
 // -- 自动运行网络/沙盒 --
 "Auto-Run Network Access" => "自动运行网络访问"
@@ -399,6 +492,7 @@
 "Hide Logs" => "隐藏日志"
 
 // ==================== 测试版 (Beta) 页面 ====================
+// "Beta" => "测试版"
 "Background Agents" => "后台 Agent"
 "Bug Finder" => "Bug 查找器"
 "Bug finder" => "Bug 查找器"
@@ -532,6 +626,7 @@
 "Island" => "浮动岛"
 "Start Free Trial" => "开始免费试用"
 "Start free trial" => "开始免费试用"
+
 
 // ==================== placeholder 翻译 ====================
 "AWS Access Key ID" => "AWS 访问密钥 ID"

@@ -1,139 +1,294 @@
-# Cursor Settings 页面汉化 + 用量监控工具
+# CursorTranslate
 
-## 工具简介
+> 为 Cursor 设置页提供中文翻译与用量展示的轻量 Python 工具。
 
-本工具用于将 Cursor IDE 的 Settings 页面（设置页面）从英文翻译为中文，同时在设置页面的用户信息区域下方实时显示 API 用量数据（总用量、高级模型用量、重置日期、倒计时等）。无论 Cursor 版本如何更新，只需重新运行脚本即可恢复汉化与用量显示。
+CursorTranslate 会读取 Cursor 本地用户数据中的认证信息，生成前端翻译脚本并注入到 Cursor 的 `workbench.html` 中，同时同步更新 `product.json` 中的校验值，用于避免修改核心文件后出现安装损坏提示。
 
-## 文件清单
+## Features
+
+- 翻译 Cursor 设置页中的常见英文文本
+- 自动读取本地 `state.vscdb` 中的登录信息
+- 获取账号总用量与高级请求用量
+- 在设置页插入用量卡片
+- 自动备份 `workbench.html` 与 `product.json`
+- 支持重复执行，已注入时仅更新脚本和校验值
+- 支持一键恢复为原始状态
+
+## Project Structure
 
 | 文件 | 说明 |
-|------|------|
-| `CursorHanHua_GongJu.py` | Python 汉化注入主程序（核心脚本） |
-| `QiDong_Cursor_ZhongWen.bat` | 一键启动批处理文件（自动注入 + 启动 Cursor） |
-| `说明.md` | 本说明文档 |
+| --- | --- |
+| `CursorTranslate.py` | 主脚本 |
+| `cursor_translate_dic.txt` | 翻译词典文件 |
+| `QiDong_Cursor_ZhongWen.bat` | Windows 辅助启动脚本 |
+| `README.md` | 项目说明文档 |
 
-## 使用方法
+## How It Works
 
-### 方法一：一键启动（推荐）
+执行流程如下：
 
-双击 `QiDong_Cursor_ZhongWen.bat`，它会自动检测汉化状态并注入，然后启动 Cursor。
+1. 从 Cursor 本地数据库 `state.vscdb` 读取 `accessToken` 和邮箱
+2. 调用 Cursor 接口获取用量摘要和高级请求数据
+3. 读取本地翻译词典 `cursor_translate_dic.txt`
+4. 生成 `cursor_hanhua.js`
+5. 备份并修改 Cursor 的 `workbench.html`
+6. 注入脚本引用
+7. 重新计算 `workbench.html` 的 SHA256 并写回 `product.json`
 
-### 方法二：手动注入
+## Requirements
+
+- Python 3
+- 本地已安装并登录 Cursor
+- 对 Cursor 安装目录具有读写权限
+- 网络可访问以下接口：
+  - `https://www.cursor.com/api/usage-summary`
+  - `https://api2.cursor.sh/auth/usage`
+
+项目仅使用 Python 标准库，不依赖第三方包。
+
+## Configuration
+
+脚本内置了默认路径配置。
+
+### Cursor 安装目录
+
+- Windows: `%LocalAppData%\Programs\cursor`
+- Linux: `/usr/share/cursor`
+- 其他系统: `/usr/share/cursor`
+
+### Cursor 用户数据目录
+
+- Windows: `%AppData%\Cursor`
+- Linux: `~/.cursor`
+- 其他系统: `~/.cursor`
+
+如果你的实际安装路径不同，运行时可通过 `--cursorDir="实际路径"` 指定，无需修改脚本常量。
+
+## Quick Start
+
+### Help
+
+默认不带参数运行时，只会显示帮助信息，不会直接执行：
 
 ```bash
-# 注入汉化 + 用量显示
-python CursorHanHua_GongJu.py
-
-# 恢复原始英文
-python CursorHanHua_GongJu.py --huifu
+python CursorTranslate.py
 ```
 
-注入后需要 **重启 Cursor** 才能看到效果。
+### Apply
 
-## 修改安装路径
-
-打开 `CursorHanHua_GongJu.py`，找到文件开头的 **用户配置区域**：
-
-```python
-# ★★★ 用户配置区域 ★★★
-CURSOR_AN_ZHUANG_LU_JING = r"D:\Tools\cursor"
-CURSOR_SHU_JU_LU_JING    = r"D:\Tools\cursor\user"
+```bash
+python CursorTranslate.py --apply
 ```
 
-将两个路径分别替换为您的 Cursor 实际安装路径和用户数据目录（存放认证令牌的目录）。
+### Restore
 
-同样，打开 `QiDong_Cursor_ZhongWen.bat`，修改顶部的配置变量：
-
-```bat
-set "CURSOR_EXE=D:\Tools\cursor\Cursor.exe"
-set "CURSOR_USER_DIR=D:\Tools\cursor\user"
-set "HANHUA_SCRIPT=e:\OPENCLAW\CursorHanHua_GongJu.py"
+```bash
+python CursorTranslate.py --restore
 ```
 
-## 工作原理
+恢复时会：
 
-### 整体流程
+- 还原 `workbench.html`
+- 恢复 `product.json` 的备份
+- 删除生成的 `cursor_hanhua.js`
 
-```
-Python 脚本
-  ├── 1. 从 state.vscdb 数据库读取认证令牌
-  ├── 2. 调用 Cursor API 获取用量数据（总次数、高级模型次数、计费周期等）
-  ├── 3. 备份 workbench.html → workbench.html.bak
-  ├── 4. 备份 product.json  → product.json.bak
-  ├── 5. 生成 cursor_hanhua.js（翻译 + 用量数据）写入 Cursor 目录
-  ├── 6. 在 workbench.html 中注入 <script> 标签引用翻译脚本
-  └── 7. 重新计算 workbench.html 的 SHA256 哈希值并更新 product.json 中的 checksums
-```
+## Usage Examples
 
-### 技术细节
+### Windows
 
-1. **注入位置**：翻译脚本通过 `<script src="./cursor_hanhua.js">` 标签注入到 `workbench.html` 中，位于 `workbench.js` 之前加载。
+#### 1. 使用默认命令执行
 
-2. **翻译机制**：`cursor_hanhua.js` 使用 JavaScript 的 `MutationObserver` API 监听 DOM 变化。当 Cursor Settings 页面渲染出英文文本时，脚本会实时将其替换为对应的中文翻译。
-
-3. **翻译字典**：使用 `Map` 数据结构存储英文→中文的映射关系（500+ 条），查找效率为 O(1)；同时支持正则模式匹配，用于翻译带动态数字的文本（如"3 requests remaining"）。
-
-4. **用量显示**：脚本在 Cursor 设置页面的用户邮箱下方自动插入用量信息卡片，包含：
-   - 总用量进度条（已用 / 总限额，颜色随使用率变化）
-   - 高级模型（gpt-4 类）用量进度条
-   - 计费周期重置日期
-   - 今天的日期
-   - 距重置日期的倒计时（≤3 天时变黄色预警）
-   - 点击卡片可立即刷新用量数据，每 60 秒自动刷新一次
-
-5. **认证方式**：脚本自动从 `state.vscdb`（Cursor 本地 SQLite 数据库）读取 `cursorAuth/accessToken`，无需手动配置 API Key。令牌以 Base64 编码嵌入 JS 文件，在浏览器端解码后用于 API 请求。
-
-6. **性能保障**：
-   - 所有翻译操作通过 `requestAnimationFrame` 批量合并到下一帧执行，不阻塞 UI 线程
-   - 只处理新增/变化的 DOM 节点（增量翻译），不做全量扫描
-   - 自动跳过编辑器区域（`.monaco-editor` 等），不影响代码编辑
-   - 跳过 `<textarea>`、`<input>`、`<code>`、`<pre>` 等不应翻译的元素
-
-7. **版本兼容**：Cursor 更新时会覆盖 `workbench.html`，汉化注入会被清除。使用 `QiDong_Cursor_ZhongWen.bat` 启动时会自动检测并重新注入，因此无论版本如何更新都能保持汉化。
-
-8. **幂等性**：脚本可重复运行，不会重复注入。如果检测到已注入，只会更新翻译 JS 文件内容（以便字典更新和用量数据刷新生效）。
-
-9. **校验值同步**：Cursor 通过 `product.json` 中的 `checksums` 字段校验核心文件的 SHA256 哈希值。修改 `workbench.html` 后如不更新校验值，Cursor 启动时会提示 "Your Cursor installation appears to be corrupt. Please reinstall."。脚本会自动重新计算并更新校验值，避免此提示。
-
-### 安全性
-
-- 注入前自动创建 `workbench.html.bak` 和 `product.json.bak` 备份
-- 可随时通过 `--huifu` 参数恢复全部原始文件（包括校验值）
-- 翻译脚本仅修改文本节点的 `textContent`，不注入任何可执行代码
-- 不修改 Cursor 的核心逻辑文件（`workbench.desktop.main.js` 等）
-- 认证令牌以 Base64 编码存储于本地 JS 文件，不上传到任何第三方服务器
-
-## 添加/修改翻译条目
-
-翻译词典位于 `CursorHanHua_GongJu.py` 文件中 `ShengCheng_JS_DaiMa()` 函数内的 `FanYi_CiDian` Map。格式为 JavaScript Map 条目：
-
-```javascript
-["English Text", "中文翻译"],
+```powershell
+python .\CursorTranslate.py --apply
 ```
 
-正则模式匹配条目位于 `MoShi_FanYi` 数组中，格式为：
+恢复：
 
-```javascript
-[/正则表达式/i, "替换字符串（$1 表示捕获组）"],
+```powershell
+python .\CursorTranslate.py --restore
 ```
 
-**注意事项**：
-- 中文翻译文本中 **不能包含中文全角引号**（`""`），否则会导致 JS 语法错误
-- 如需在翻译中使用引号，请使用方括号 `[]` 或半角引号 `'` 替代
-- 修改后重新运行 `python CursorHanHua_GongJu.py` 并重启 Cursor 即可生效
+#### 2. 如果你的 Cursor 安装目录不是默认值
 
-## 故障排除
+可以直接通过命令行指定安装目录，例如：
 
-| 问题 | 解决方案 |
-|------|---------|
-| 提示 "installation appears to be corrupt" | 重新运行 `python CursorHanHua_GongJu.py` 更新校验值 |
-| 汉化完全无效 | 检查 JS 文件是否有语法错误：`node -c cursor_hanhua.js` |
-| 部分文本未翻译 | 在 `FanYi_CiDian` 字典中添加对应的英文→中文映射 |
-| 用量卡片不显示 | 检查 `CURSOR_SHU_JU_LU_JING` 路径是否正确，确认已登录 Cursor |
-| 用量数据获取失败 | 检查网络连接，或令牌已过期（重新登录 Cursor 后重新运行脚本） |
-| Cursor 启动异常 | 运行 `python CursorHanHua_GongJu.py --huifu` 恢复原始文件 |
-| 更新后汉化消失 | 重新运行 `python CursorHanHua_GongJu.py` 或使用 bat 启动 |
+```powershell
+python .\CursorTranslate.py --apply --cursorDir="D:\Tools\cursor"
+```
 
-**关于 "installation appears to be corrupt" 的原因**：Cursor（基于 VS Code/Electron）在 product.json 的 checksums 字段中记录了核心文件的 SHA256 哈希值。我们修改了 workbench.html 注入翻译脚本后，文件哈希变了，但 product.json 中记录的仍是原始哈希值，所以 Cursor 启动时检测到不一致就报此错误。
+默认 Windows 安装目录为 `%LocalAppData%\Programs\cursor`。
 
-修复方式：`CursorHanHua_GongJu.py` 中的 `GengXin_JiaoYan_Zhi()` 函数在注入 HTML 后自动重新计算 workbench.html 的 SHA256 哈希值，并更新到 product.json 中。恢复时（`--huifu`）也会同步恢复 product.json 的原始值。
+#### 3. 使用 bat 辅助脚本
+
+如果你保留了 `QiDong_Cursor_ZhongWen.bat`，也可以在 Windows 下结合它做启动前处理。
+
+### Linux
+
+#### 1. 直接执行
+
+```bash
+python3 ./CursorTranslate.py --apply
+```
+
+恢复：
+
+```bash
+python3 ./CursorTranslate.py --restore
+```
+
+#### 2. 如果 Cursor 安装在默认位置
+
+默认会使用：
+
+- 安装目录：`/usr/share/cursor`
+- 用户目录：`~/.cursor`
+
+如果脚本需要写入系统目录，可能需要使用有权限的方式运行，例如先确认文件权限、再以合适权限执行。
+
+#### 3. 自定义安装目录示例
+
+如果你的 Cursor 安装路径不同，可以直接在命令行指定：
+
+```bash
+python3 ./CursorTranslate.py --apply --cursorDir="/your/cursor/path"
+```
+
+## Translation Dictionary
+
+默认词典文件为：
+
+- `cursor_translate_dic.txt`
+
+词典每行使用 `=>` 分隔原文和译文，例如：
+
+```text
+Settings => 设置
+General => 常规
+Account => 账户
+```
+
+也支持带引号的写法：
+
+```text
+"Settings" => "设置"
+```
+
+以下内容会被忽略：
+
+- 空行
+- 以 `#` 开头的行
+- 以 `//` 开头的行
+
+## Frontend Behavior After Injection
+
+生成的 JS 脚本会在 Cursor 设置页中执行以下逻辑：
+
+- 使用词典和正则模式翻译文本节点
+- 翻译 `title`、`aria-label`、`placeholder` 等属性
+- 跳过编辑器区域、输入框、代码块等不适合翻译的位置
+- 监听 DOM 变化并增量处理新节点
+- 在账号相关区域附近插入用量卡片
+
+当前用量数据字段已经统一为英文 key，例如：
+
+- `total_used`
+- `total_limit`
+- `remaining`
+- `premium_used`
+- `premium_limit`
+- `total_percent_used`
+- `api_percent_used`
+- `billing_cycle_start`
+- `billing_cycle_end`
+- `updated_at`
+- `plan_type`
+- `is_valid`
+- `model_details`
+
+## Backup and Restore
+
+脚本会自动生成以下备份：
+
+- `workbench.html.bak`
+- `product.json.bak`
+
+如果需要恢复，执行：
+
+```bash
+python CursorTranslate.py --restore
+```
+
+## FAQ
+
+### 提示找不到 `workbench.html`
+
+说明当前 Cursor 安装目录不正确，或者 Cursor 安装位置不是默认路径。
+
+可以优先检查：
+
+- Windows 默认路径是否为 `%LocalAppData%\Programs\cursor`
+- 你是否需要通过 `--cursorDir="实际路径"` 指定自定义安装目录
+
+### 提示找不到翻译词典文件
+
+请确认项目目录下存在：
+
+- `cursor_translate_dic.txt`
+
+并且文件名与 [CursorTranslate.py](file:///home/ericwyn/dev/python/Cursor_chinese/CursorTranslate.py) 中的 `TRANSLATION_DICTIONARY_NAME` 一致。
+
+### 用量获取失败
+
+可能原因：
+
+- 当前未登录 Cursor
+- 本地数据库里没有有效 token
+- 网络访问 Cursor 接口失败
+- token 已失效
+
+这种情况下脚本仍然可以继续做汉化，但用量数据会为空。
+
+### Cursor 提示安装损坏
+
+正常情况下脚本会自动更新 `product.json` 中的校验值。
+
+如果之前已经手动修改导致异常，可以尝试：
+
+```bash
+python CursorTranslate.py --restore
+python CursorTranslate.py --apply
+```
+
+如果你的安装目录不是默认值，也可以带上 `--cursorDir`：
+
+```bash
+python CursorTranslate.py --restore --cursorDir="实际路径"
+python CursorTranslate.py --apply --cursorDir="实际路径"
+```
+
+### 更新 Cursor 后汉化失效
+
+Cursor 更新后可能覆盖 `workbench.html`，重新执行一次：
+
+```bash
+python CursorTranslate.py --apply
+```
+
+即可重新注入。
+
+## Security Notes
+
+- 脚本不会上传本地数据库文件
+- 认证信息从本地 Cursor 数据目录读取
+- 使用的是 Cursor 自身接口
+- 修改前会自动备份关键文件
+
+但本项目本质上仍然会修改 Cursor 安装目录下的文件，请自行评估风险，并在可控环境下使用。
+
+## Development
+
+可以使用以下命令检查脚本语法：
+
+```bash
+python -m py_compile CursorTranslate.py
+```
